@@ -1,6 +1,7 @@
 const { Logger } = require("../Logger/logger");
 const { getHelloWorld } = require("../services/hello-world");
 const { fetchGoogleConfiguration } = require("../services/fetchGoogleConfiguration");
+const { storeGoogleAccessToken } = require("../secureStorage/mondaySecureStorage");
 
 /**
  * API Controller for Hello World
@@ -56,9 +57,20 @@ const saveGoogleAccessTokenController = async (req, res) => {
     // Log the access token
     Logger.info(req, `Google Access Token received: ${accessToken}`);
 
+    // Store the access token in Monday.com SecureStorage
+    const stored = await storeGoogleAccessToken(req, accessToken);
+    
+    if (!stored) {
+      Logger.error(req, 'Failed to store Google access token in SecureStorage');
+      return res.status(500).json({
+        success: false,
+        message: "Failed to store access token in SecureStorage"
+      });
+    }
+
     res.status(200).json({
       success: true,
-      message: "Google access token saved successfully"
+      message: "Google access token saved successfully in SecureStorage"
     });
   } catch (error) {
     Logger.error(req, `Save Google Access Token API error: ${error.message}`);

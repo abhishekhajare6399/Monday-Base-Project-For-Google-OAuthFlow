@@ -55,4 +55,34 @@ function validateMondaySession(req, res, next) {
   }
 }
 
-module.exports = validateMondaySession;
+function getMondayUserDetails(req, res) {
+  try {
+    const token = req.headers['x-monday-session-token'];
+    if (!token) {
+      Logger.warn(req, "Monday session token missing in request headers");
+      return res.status(401).json({
+        error: "Missing monday session token"
+      });
+    }
+
+    // Check if client secret is configured
+    if (!MONDAY_CLIENT_SECRET) {
+      Logger.error(req, "MONDAY_CLIENT_SECRET or MONDAY_SIGNING_SECRET is not configured in environment variables");
+      return res.status(500).json({
+        error: "Server configuration error: Monday client secret not found"
+      });
+    }
+    const decoded = jwt.verify(token, MONDAY_CLIENT_SECRET);
+    return decoded.dat || decoded;
+  } catch (error) {
+    Logger.error(req, `Error getting Monday user details: ${error.message}`);
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+}
+
+module.exports = {
+  validateMondaySession,
+  getMondayUserDetails
+};

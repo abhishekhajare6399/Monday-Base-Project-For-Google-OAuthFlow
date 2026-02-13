@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const { Logger, requestLogger } = require("./Logger/logger");
 const { getHelloWorldController, fetchGoogleConfigurationController, saveGoogleAccessTokenController } = require("./apiContoller/controller");
-const validateMondaySession = require("./Authentication/mondaySessionValidation");
+const { validateMondaySession } = require("./Authentication/mondaySessionValidation");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const env = process.env.NODE_ENV;
