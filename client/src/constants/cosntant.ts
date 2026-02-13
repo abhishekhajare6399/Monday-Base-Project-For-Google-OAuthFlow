@@ -26,3 +26,14 @@ export interface GoogleConfigurationResponse {
   success: boolean;
   googleConfiguration: GoogleConfiguration | null;
 }
+
+/**
+ * Google user details interface
+ */
+export interface GoogleUser {
+  email: string | null;
+  name: string | null;
+  picture: string | null;
+  id: string | null;
+  verified_email: boolean;
+}

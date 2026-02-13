@@ -2,6 +2,7 @@ const { Logger } = require("../Logger/logger");
 const { getHelloWorld } = require("../services/hello-world");
 const { fetchGoogleConfiguration } = require("../services/fetchGoogleConfiguration");
 const { storeGoogleAccessToken } = require("../secureStorage/mondaySecureStorage");
+const { fetchGoogleUserDetails } = require("../services/fetchGoogleUserDetials");
 
 /**
  * API Controller for Hello World
@@ -54,9 +55,6 @@ const saveGoogleAccessTokenController = async (req, res) => {
       });
     }
 
-    // Log the access token
-    Logger.info(req, `Google Access Token received: ${accessToken}`);
-
     // Store the access token in Monday.com SecureStorage
     const stored = await storeGoogleAccessToken(req, accessToken);
     
@@ -82,8 +80,34 @@ const saveGoogleAccessTokenController = async (req, res) => {
   }
 };
 
+const fetchGoogleUserDetailsController = async (req, res) => {
+  try {
+    const userDetails = await fetchGoogleUserDetails(req);
+    
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Google user details not found. Please authenticate with Google first."
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      googleUser: userDetails
+    });
+  } catch (error) {
+    Logger.error(req, `Fetch Google User Details API error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getHelloWorldController,
   fetchGoogleConfigurationController,
-  saveGoogleAccessTokenController
+  saveGoogleAccessTokenController,
+  fetchGoogleUserDetailsController
 };

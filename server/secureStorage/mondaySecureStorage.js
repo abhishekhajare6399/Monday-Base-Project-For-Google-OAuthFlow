@@ -237,17 +237,11 @@ async function storeGoogleAccessToken(req, accessToken) {
       userEmail: userDetails.email || null
     };
     
-    Logger.info(req, `Storing token for accountId: ${accountId}, userId: ${userId}, Key: ${GOOGLE_ACCESS_TOKEN_KEY}`);
-    Logger.info(req, `TokenData to store: ${JSON.stringify(tokenData)}`);
-    
     // Store the token using the class method
     await mondaySecureStorage.set(accountId.toString(), GOOGLE_ACCESS_TOKEN_KEY, tokenData);
-    
-    Logger.info(req, `Google access token stored successfully for accountId ${accountId}, userId ${userId} (${userDetails.email || 'unknown email'})`);
     return true;
   } catch (error) {
     Logger.error(req, `Error storing Google access token in SecureStorage: ${error.message}`);
-    Logger.error(req, `Error stack: ${error.stack}`);
     return false;
   }
 }
@@ -260,9 +254,7 @@ async function storeGoogleAccessToken(req, accessToken) {
 async function getGoogleAccessToken(req) {
   try {
     // Get Monday user details to get user ID
-    const userDetails = await fetchMondayUserDetails(req);
-    Logger.info(req, `User details: ${JSON.stringify(userDetails)}`);
-    
+    const userDetails = await fetchMondayUserDetails(req);    
     if (!userDetails || !userDetails.id) {
       Logger.error(req, 'Failed to get Monday user details for retrieving Google access token');
       return null;
@@ -277,17 +269,11 @@ async function getGoogleAccessToken(req) {
       Logger.error(req, 'Failed to get accountId from session token for retrieving Google access token');
       return null;
     }
-    
-    Logger.info(req, `Attempting to retrieve token for Account ID: ${accountId}, User ID: ${userId}, Key: ${GOOGLE_ACCESS_TOKEN_KEY}`);
-    
+        
     // Retrieve using the class method
     const tokenDataString = await mondaySecureStorage.get(accountId.toString(), GOOGLE_ACCESS_TOKEN_KEY);
     
-    Logger.info(req, `Raw tokenData from SecureStorage: ${JSON.stringify(tokenDataString)}`);
-    Logger.info(req, `TokenData type: ${typeof tokenDataString}`);
-    
     if (!tokenDataString) {
-      Logger.info(req, `No Google access token found for accountId ${accountId}`);
       return null;
     }
 
@@ -296,24 +282,20 @@ async function getGoogleAccessToken(req) {
       const tokenData = JSON.parse(tokenDataString);
       
       if (tokenData && tokenData.accessToken) {
-        Logger.info(req, `Google access token retrieved successfully for accountId ${accountId}, userId ${userId}`);
         return tokenData.accessToken;
       }
       
-      Logger.info(req, `TokenData found but missing accessToken property. Structure: ${JSON.stringify(tokenData)}`);
       return null;
     } catch (parseError) {
       Logger.error(req, `Failed to parse tokenData as JSON: ${parseError.message}`);
       // If it's not JSON, it might be the token itself
       if (tokenDataString.length > 50) {
-        Logger.info(req, `TokenData appears to be the access token directly`);
         return tokenDataString;
       }
       return null;
     }
   } catch (error) {
     Logger.error(req, `Error retrieving Google access token from SecureStorage: ${error.message}`);
-    Logger.error(req, `Error stack: ${error.stack}`);
     return null;
   }
 }
@@ -346,7 +328,6 @@ async function deleteGoogleAccessToken(req) {
     // Delete using the class method
     await mondaySecureStorage.delete(accountId.toString(), GOOGLE_ACCESS_TOKEN_KEY);
     
-    Logger.info(req, `Google access token deleted successfully for accountId ${accountId}, userId ${userId}`);
     return true;
   } catch (error) {
     Logger.error(req, `Error deleting Google access token from SecureStorage: ${error.message}`);

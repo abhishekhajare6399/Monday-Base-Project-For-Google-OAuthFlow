@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const { Logger, requestLogger } = require("./Logger/logger");
-const { getHelloWorldController, fetchGoogleConfigurationController, saveGoogleAccessTokenController } = require("./apiContoller/controller");
+const { getHelloWorldController, fetchGoogleConfigurationController, saveGoogleAccessTokenController, fetchGoogleUserDetailsController } = require("./apiContoller/controller");
 const { validateMondaySession } = require("./Authentication/mondaySessionValidation");
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -74,6 +74,7 @@ app.use(`${basePath}`, (req, res, next) => {
 app.get(`${basePath}/hello-world`, getHelloWorldController);
 app.get(`${basePath}/google-configuration`, fetchGoogleConfigurationController);
 app.post(`${basePath}/save-google-access-token`, saveGoogleAccessTokenController);
+app.get(`${basePath}/google-user-details`, fetchGoogleUserDetailsController);
 
 app.listen(PORT, () => {
   Logger.log("INFO", `Server started successfully on port ${PORT}`);

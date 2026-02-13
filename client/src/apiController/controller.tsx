@@ -5,7 +5,7 @@
 
 import { getMondaySessionToken } from '../mondayServices/getMondaySessionToken';
 import { type MondayUser } from '../constants/cosntant';
-import { type GoogleConfigurationResponse } from '../constants/cosntant';
+import { type GoogleConfigurationResponse, type GoogleUser } from '../constants/cosntant';
 
 // Use proxy in development, or full URL in production
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -145,6 +145,49 @@ export const saveGoogleAccessToken = async (accessToken: string): Promise<{ succ
     }
   } catch (error) {
     console.error('Error saving Google access token:', error);
+    throw error;
+  }
+};
+
+/**
+ * Google User Details API response interface
+ */
+export interface GoogleUserDetailsResponse {
+  success: boolean;
+  googleUser: GoogleUser | null;
+}
+
+/**
+ * Fetches Google user details from the server
+ * @returns Promise with the Google user details response
+ */
+export const getGoogleUserDetails = async (): Promise<GoogleUserDetailsResponse> => {
+  const url = `${API_BASE_URL}${BASE_PATH}/google-user-details`;
+  try {
+    const headers = await getHeadersWithToken();
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      return {
+        success: true,
+        googleUser: data.googleUser || null
+      };
+    } else {
+      throw new Error('Invalid response format');
+    }
+  } catch (error) {
+    console.error('Error fetching Google user details:', error);
     throw error;
   }
 };

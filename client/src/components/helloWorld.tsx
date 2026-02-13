@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getHelloWorld, saveGoogleAccessToken } from '../apiController/controller';
-import { type MondayUser } from '../constants/cosntant';
+import { getHelloWorld, saveGoogleAccessToken, getGoogleUserDetails } from '../apiController/controller';
+import { type MondayUser, type GoogleUser } from '../constants/cosntant';
 import { useGoogleAuth } from '../Authentication/googleConnection';
 
 const HelloWorld = () => {
@@ -10,6 +10,8 @@ const HelloWorld = () => {
   const [error, setError] = useState<string | null>(null);
   const [googleAuthLoading, setGoogleAuthLoading] = useState<boolean>(false);
   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
+  const [googleUser, setGoogleUser] = useState<GoogleUser | null>(null);
+  const [googleUserLoading, setGoogleUserLoading] = useState<boolean>(false);
   const { handleGoogleAuth } = useGoogleAuth();
 
   useEffect(() => {
@@ -30,6 +32,28 @@ const HelloWorld = () => {
     fetchMessage();
   }, []);
 
+  // Fetch Google user details on component mount if user is already authenticated
+  useEffect(() => {
+    const fetchGoogleUser = async () => {
+      try {
+        setGoogleUserLoading(true);
+        const response = await getGoogleUserDetails();
+        if (response.success && response.googleUser) {
+          setGoogleUser(response.googleUser);
+          // Set a placeholder for access token if user details are available
+          setGoogleAccessToken('stored');
+        }
+      } catch (err) {
+        // Silently fail - user might not be authenticated yet
+        console.log('Google user details not available:', err);
+      } finally {
+        setGoogleUserLoading(false);
+      }
+    };
+
+    fetchGoogleUser();
+  }, []);
+
   const handleContinueWithGoogle = async () => {
     setGoogleAuthLoading(true);
     setError(null);
@@ -43,6 +67,23 @@ const HelloWorld = () => {
         try {
           await saveGoogleAccessToken(accessToken);
           console.log('Google access token saved to backend successfully');
+          
+          // Fetch Google user details after saving the token
+          setGoogleUserLoading(true);
+          try {
+            const response = await getGoogleUserDetails();
+            if (response.success && response.googleUser) {
+              setGoogleUser(response.googleUser);
+              console.log('Google user details fetched successfully');
+            } else {
+              console.warn('Google user details not available');
+            }
+          } catch (err) {
+            console.error('Failed to fetch Google user details:', err);
+            // Don't set error state here as the token was saved successfully
+          } finally {
+            setGoogleUserLoading(false);
+          }
         } catch (err) {
           console.error('Failed to save Google access token to backend:', err);
           setError(err instanceof Error ? err.message : 'Failed to save access token');
@@ -136,9 +177,48 @@ const HelloWorld = () => {
         {googleAccessToken && (
           <div style={{ marginTop: '20px', padding: '15px', background: '#f0f8ff', borderRadius: '4px' }}>
             <p style={{ color: '#34A853', fontWeight: 'bold' }}>✓ Successfully connected to Google!</p>
-            <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-              Access Token: {googleAccessToken.substring(0, 20)}...
-            </p>
+            {googleUserLoading && (
+              <p style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>Loading user details...</p>
+            )}
+            {googleUser && !googleUserLoading && (
+              <div style={{ marginTop: '15px', padding: '15px', background: 'white', borderRadius: '4px', border: '1px solid #ddd' }}>
+                <h3 style={{ marginTop: '0', marginBottom: '15px', color: '#333' }}>Google User Details</h3>
+                {googleUser.picture && (
+                  <div style={{ marginBottom: '15px' }}>
+                    <img 
+                      src={googleUser.picture} 
+                      alt={googleUser.name || 'Google User'}
+                      style={{ width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #4285f4' }}
+                    />
+                  </div>
+                )}
+                <div style={{ marginTop: '10px' }}>
+                  {googleUser.name && (
+                    <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                      <strong>Name:</strong> {googleUser.name}
+                    </p>
+                  )}
+                  {googleUser.email && (
+                    <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                      <strong>Email:</strong> {googleUser.email}
+                      {googleUser.verified_email && (
+                        <span style={{ marginLeft: '8px', color: '#34A853', fontSize: '12px' }}>✓ Verified</span>
+                      )}
+                    </p>
+                  )}
+                  {googleUser.id && (
+                    <p style={{ margin: '8px 0', fontSize: '12px', color: '#666' }}>
+                      <strong>ID:</strong> {googleUser.id}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {!googleUser && !googleUserLoading && (
+              <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+                Access Token: {googleAccessToken.substring(0, 20)}...
+              </p>
+            )}
           </div>
         )}
       </div>
