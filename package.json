@@ -1,0 +1,33 @@
+{
+  "name": "google-drive-embedded-root",
+  "version": "1.0.0",
+  "description": "Google Drive Embedded Application - Full Stack",
+  "scripts": {
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install:all": "npm install && npm run install:server && npm run install:client",
+    "install:client:Dependencies": "cd client && npm install monday-sdk-js",
+    "install:server:Dependencies": "cd server && npm install axios && npm install jsonwebtoken",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run dev",
+    "build": "npm run build:all",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:all": "npm run build:client"
+  },
+  "keywords": [
+    "google-drive",
+    "embedded",
+    "react",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
