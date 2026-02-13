@@ -116,6 +116,9 @@ dist
 # DynamoDB Local files
 .dynamodb/
 
+# Monday.com SecureStorage local database
+local-secure-storage.db.json
+
 # Firebase cache directory
 .firebase/
 
