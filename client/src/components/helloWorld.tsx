@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getHelloWorld, saveGoogleAccessToken } from '../apiController/controller';
 import { type MondayUser } from '../constants/cosntant';
-import { useGoogleAuth } from '../../Authentication/googleConnection';
+import { useGoogleAuth } from '../Authentication/googleConnection';
 
 const HelloWorld = () => {
   const [message, setMessage] = useState<string>('');
